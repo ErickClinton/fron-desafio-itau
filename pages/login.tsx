@@ -1,16 +1,8 @@
-import {
-    Box,
-    Button,
-    Container,
-    Paper,
-    TextField,
-    Typography,
-} from '@mui/material';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
+import {Box, Button, Container, Paper, TextField, Typography,} from '@mui/material';
+import {useRouter} from 'next/router';
+import {useState} from 'react';
 import Image from 'next/image';
-import axios from 'axios';
-import {apiService} from "@/pages/services/investments";
+import {apiService} from '@/pages/services/investments';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -18,24 +10,25 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleCreateUser = async () => {
+    const handleLoginOrCreate = async () => {
         if (!email || !name) return;
+
+        setLoading(true);
         try {
-            setLoading(true);
-            const response = await apiService.createUser( {
-                name,
-                email,
-            });
-            console.log(response);
-            const user = response.data.message;
-            console.log(user);
+            let user;
+            try {
+                user = await apiService.login(email);
+            } catch {
+                user = await apiService.createUser({name, email});
+            }
+
             localStorage.setItem('userId', user.id);
             localStorage.setItem('userName', user.name);
             localStorage.setItem('userEmail', user.email);
 
             router.push(`/dashboard?email=${encodeURIComponent(user.email)}`);
         } catch (error) {
-            alert('Erro ao criar usuário. Tente novamente.');
+            alert('Erro ao autenticar/criar usuário. Tente novamente.');
             console.error(error);
         } finally {
             setLoading(false);
@@ -64,7 +57,6 @@ export default function Login() {
                 </Typography>
             </Box>
 
-            {/* Título */}
             <Box sx={{ py: 6, textAlign: 'center', color: 'white' }}>
                 <Typography variant="h3" fontWeight="bold">
                     Acesso ao Painel de Investimentos
@@ -74,7 +66,6 @@ export default function Login() {
                 </Typography>
             </Box>
 
-            {/* Formulário */}
             <Container maxWidth="sm">
                 <Paper
                     elevation={4}
@@ -91,7 +82,7 @@ export default function Login() {
                         fontWeight="bold"
                         mb={2}
                     >
-                        Criar novo usuário
+                        Entrar com e-mail
                     </Typography>
                     <TextField
                         fullWidth
@@ -111,7 +102,7 @@ export default function Login() {
                     <Button
                         fullWidth
                         size="large"
-                        onClick={handleCreateUser}
+                        onClick={handleLoginOrCreate}
                         disabled={loading}
                         sx={{
                             backgroundColor: '#FF6B00',
@@ -121,7 +112,7 @@ export default function Login() {
                             },
                         }}
                     >
-                        {loading ? 'Criando...' : 'Criar e Entrar'}
+                        {loading ? 'Carregando...' : 'Entrar / Criar Conta'}
                     </Button>
                 </Paper>
             </Container>

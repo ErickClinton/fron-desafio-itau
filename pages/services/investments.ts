@@ -71,5 +71,19 @@ export const apiService = {
             Email: createUserDto.email,
         });
         return response;
+    },
+
+    async login(email: string): Promise<any> {
+        try {
+            const response = await api.post('/users/login', {
+                email: email // <- minúsculo (ajuste conforme seu DTO backend espera)
+            });
+
+            console.log("Login response:", response.data);
+            return response.data;
+        } catch (error: any) {
+            console.error("Erro no login:", error.response?.data || error.message);
+            throw error;
+        }
     }
 };
